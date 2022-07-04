@@ -22,8 +22,8 @@ func (p *Products) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Method == http.MethodPut {
-
+	if r.Method == http.MethodPost {
+		p.addProduct(rw, r)
 		return
 	}
 
@@ -32,10 +32,26 @@ func (p *Products) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (p *Products) getProducts(rw http.ResponseWriter, r *http.Request) {
+	p.l.Println("handle GET Request")
+
 	lp := data.GetProducts()
 	// d, err := json.Marshal(lp)
 	err := lp.ToJson(rw)
 	if err != nil {
 		http.Error(rw, "Unable to marshal products json", http.StatusInternalServerError)
 	}
+}
+
+func (p *Products) addProduct(rw http.ResponseWriter, r *http.Request) {
+	p.l.Println("handle POST Request")
+
+	prod := &data.Product{}
+
+	err := prod.FromJson(r.Body)
+	if err != nil {
+		http.Error(rw, "Unable to unmarshal json", http.StatusBadRequest)
+	}
+
+	p.l.Printf("Prod: %#v", prod)
+	data.AddProduct(prod)
 }

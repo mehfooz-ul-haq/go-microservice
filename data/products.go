@@ -19,16 +19,38 @@ type Product struct {
 
 type Products []*Product
 
+// it will return error if there is any error
+func (p *Product) FromJson(r io.Reader) error {
+	e := json.NewDecoder(r)
+	return e.Decode(p)
+}
+
+// ToJson serialize the contents of the collection to JSON
+// NewEncoder provides better performance than json.Unmarshal as it does not
+// have to buffer the output into an in-memory slice of bytes
+// this reduces allocations and overheads of the service
+//
+// https://golang.org/pkg/encoding/json/#NewEncoder
 func (p *Products) ToJson(w io.Writer) error {
 	e := json.NewEncoder(w)
 	return e.Encode(p)
 }
 
 func GetProducts() Products {
-	return porductList
+	return productList
 }
 
-var porductList = []*Product{
+func AddProduct(p *Product) {
+	p.ID = getNextId()
+	productList = append(productList, p)
+}
+
+func getNextId() int {
+	lp := productList[len(productList)-1]
+	return lp.ID + 1
+}
+
+var productList = []*Product{
 	&Product{
 		ID:          1,
 		Name:        "Latte",
